@@ -19,6 +19,8 @@ export default function PortfolioCard({ item }: Props) {
             src={item.cover}
             alt={item.title}
             fill
+            unoptimized
+            priority={item.id <= 6}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition duration-700 ease-out group-hover:scale-105"
           />
@@ -55,9 +57,11 @@ export default function PortfolioCard({ item }: Props) {
               {item.title}
             </h3>
 
-            <p className="mt-2 text-sm text-white/70">
-              {item.year}
-            </p>
+            {item.year && (
+              <p className="mt-2 text-sm text-white/70">
+                {item.year}
+              </p>
+            )}
 
             <span className="mt-6 text-[10px] tracking-[0.25em] text-white">
               VIEW PROJECT →
