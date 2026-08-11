@@ -1,69 +1,134 @@
+
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function AboutPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
-
       {/* Navbar */}
-      <nav className="fixed top-0 z-50 flex w-full items-center justify-between px-8 py-6 backdrop-blur-sm">
-        <Link
-          href="/"
-          className="text-xl font-semibold tracking-[0.2em]"
+      <nav className="fixed top-0 z-50 w-full bg-[#FAFAFA]/90 px-8 py-6 backdrop-blur-sm md:px-8">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link
+            href="/"
+            onClick={() => setMenuOpen(false)}
+            className="text-xl font-semibold tracking-[0.2em]"
+          >
+            BEEYANG
+          </Link>
+
+          {/* Desktop Menu */}
+          <div className="hidden gap-8 text-sm text-gray-500 md:flex">
+            <Link href="/about" className="text-black">
+              About
+            </Link>
+
+            <Link href="/experience" className="hover:text-black">
+              Experience
+            </Link>
+
+            <Link href="/awards" className="hover:text-black">
+              Awards
+            </Link>
+
+            <Link href="/contact" className="hover:text-black">
+              Contact
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="relative z-[60] flex h-10 w-10 items-center justify-center md:hidden"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+          >
+            <div className="flex w-6 flex-col gap-1.5">
+              <span
+                className={`block h-[1.5px] w-6 bg-[#111111] transition-all duration-300 ${
+                  menuOpen ? "translate-y-[4px] rotate-45" : ""
+                }`}
+              />
+
+              <span
+                className={`block h-[1.5px] w-6 bg-[#111111] transition-all duration-300 ${
+                  menuOpen ? "opacity-0" : ""
+                }`}
+              />
+
+              <span
+                className={`block h-[1.5px] w-6 bg-[#111111] transition-all duration-300 ${
+                  menuOpen ? "-translate-y-[4px] -rotate-45" : ""
+                }`}
+              />
+            </div>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          className={`overflow-hidden transition-all duration-300 md:hidden ${
+            menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
-          BEEYANG
-        </Link>
+          <div className="border-t border-[#EAEAEA] pb-4 pt-6">
+            <div className="flex flex-col">
+              <Link
+                href="/about"
+                onClick={() => setMenuOpen(false)}
+                className="border-b border-[#EAEAEA] py-4 text-sm font-medium text-black"
+              >
+                About
+              </Link>
 
-        <div className="hidden gap-8 text-sm text-gray-500 md:flex">
-          <Link
-            href="/about"
-            className="text-black"
-          >
-            About
-          </Link>
+              <Link
+                href="/experience"
+                onClick={() => setMenuOpen(false)}
+                className="border-b border-[#EAEAEA] py-4 text-sm text-gray-500 transition hover:text-black"
+              >
+                Experience
+              </Link>
 
-          <Link
-            href="/experience"
-            className="hover:text-black"
-          >
-            Experience
-          </Link>
+              <Link
+                href="/awards"
+                onClick={() => setMenuOpen(false)}
+                className="border-b border-[#EAEAEA] py-4 text-sm text-gray-500 transition hover:text-black"
+              >
+                Awards
+              </Link>
 
-          <Link
-            href="/awards"
-            className="hover:text-black"
-          >
-            Awards
-          </Link>
-
-          <Link
-            href="/contact"
-            className="hover:text-black"
-          >
-            Contact
-          </Link>
+              <Link
+                href="/contact"
+                onClick={() => setMenuOpen(false)}
+                className="py-4 text-sm text-gray-500 transition hover:text-black"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
         </div>
       </nav>
-
 
       {/* =========================================================
           About Me
       ========================================================= */}
 
       <section className="px-8 pb-28 pt-40 md:px-16">
-
         <div className="mx-auto grid max-w-7xl items-start gap-16 lg:grid-cols-2">
-
           {/* Left Content */}
           <div>
-
             <p className="text-xs tracking-[0.35em] text-gray-400">
               ABOUT ME
             </p>
 
             {/* Name */}
             <div className="mt-8">
-
               <h1 className="text-5xl font-semibold tracking-tight md:text-6xl">
                 楊旻峰
               </h1>
@@ -71,7 +136,6 @@ export default function AboutPage() {
               <p className="mt-3 text-lg tracking-[0.2em] text-gray-400">
                 BEEYANG
               </p>
-
             </div>
 
             {/* Profession */}
@@ -81,7 +145,6 @@ export default function AboutPage() {
 
             {/* About */}
             <div className="mt-14">
-
               <p className="text-xs tracking-[0.35em] text-gray-400">
                 ABOUT
               </p>
@@ -91,7 +154,6 @@ export default function AboutPage() {
               </h3>
 
               <div className="mt-8 max-w-2xl">
-
                 <p className="leading-9 text-gray-600">
                   我是一名數位媒體與視覺設計師，
                   擅長結合廣播企劃、影像製作與視覺設計，
@@ -103,21 +165,14 @@ export default function AboutPage() {
                   累積廣播、社群影音、活動攝影與品牌設計經驗，
                   習慣完整參與每一次創作流程。
                 </p>
-
               </div>
-
             </div>
-
           </div>
-
 
           {/* Profile Photo */}
           <div className="lg:pt-8">
-
             <div className="relative mx-auto w-full max-w-md lg:ml-auto">
-
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-200">
-
                 <Image
                   src="/images/profile.jpg"
                   alt="楊旻峰 BEEYANG"
@@ -126,39 +181,25 @@ export default function AboutPage() {
                   className="object-cover object-top"
                   sizes="(max-width: 1024px) 100vw, 450px"
                 />
-
               </div>
 
               {/* Photo Caption */}
-              <div className="mt-5 flex items-center justify-between text-xs text-gray-400">
+              <div className="mt-5 flex flex-col gap-2 text-xs text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+                <span>MIN FENG YANG</span>
 
-                <span>
-                  MIN FENG YANG
-                </span>
-
-                <span>
-                  DIGITAL MEDIA / VISUAL DESIGNER
-                </span>
-
+                <span>DIGITAL MEDIA / VISUAL DESIGNER</span>
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
 
       {/* =========================================================
           Expertise
       ========================================================= */}
 
       <section className="px-8 pb-20 pt-20 md:px-16">
-
         <div className="mx-auto max-w-7xl">
-
           {/* Section Header */}
           <p className="text-xs tracking-[0.35em] text-gray-400">
             EXPERTISE
@@ -170,7 +211,6 @@ export default function AboutPage() {
 
           {/* Ability Cards */}
           <div className="mt-10 grid gap-8 md:grid-cols-2">
-
             {/* 廣播企劃 */}
             <AbilityCard
               title="廣播企劃"
@@ -202,27 +242,19 @@ export default function AboutPage() {
               image="/images/about-leadership.jpg"
               description="曾參與畢業展籌備與團隊管理，負責活動規劃、進度管理及跨組溝通，培養完整的團隊執行能力。"
             />
-
           </div>
-
         </div>
-
       </section>
-
 
       {/* =========================================================
           Highlights
       ========================================================= */}
 
       <section className="px-8 pb-20 pt-4 md:px-16">
-
         <div className="mx-auto max-w-7xl">
-
           <div className="grid md:grid-cols-4">
-
             {/* 2025 */}
-            <div className="py-8 md:border-r md:border-zinc-200 md:pr-8">
-
+            <div className="border-b border-zinc-200 py-8 md:border-b-0 md:border-r md:pr-8">
               <p className="text-5xl font-semibold tracking-tight">
                 2025
               </p>
@@ -234,13 +266,10 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-7 text-gray-500">
                 「企劃編撰獎」入圍
               </p>
-
             </div>
 
-
             {/* 100+ */}
-            <div className="py-8 md:border-r md:border-zinc-200 md:px-8">
-
+            <div className="border-b border-zinc-200 py-8 md:border-b-0 md:border-r md:px-8">
               <p className="text-5xl font-semibold tracking-tight">
                 100+
               </p>
@@ -252,13 +281,10 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-7 text-gray-500">
                 社群短影音製作
               </p>
-
             </div>
 
-
             {/* 6K+ */}
-            <div className="py-8 md:border-r md:border-zinc-200 md:px-8">
-
+            <div className="border-b border-zinc-200 py-8 md:border-b-0 md:border-r md:px-8">
               <p className="text-5xl font-semibold tracking-tight">
                 6K+
               </p>
@@ -270,13 +296,10 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-7 text-gray-500">
                 單支影片觀看次數
               </p>
-
             </div>
-
 
             {/* 5+ */}
             <div className="py-8 md:pl-8">
-
               <p className="text-5xl font-semibold tracking-tight">
                 5+
               </p>
@@ -288,19 +311,13 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-7 text-gray-500">
                 廣播、影像、設計與攝影
               </p>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
-
 
 /* =========================================================
    Ability Card
@@ -319,10 +336,8 @@ function AbilityCard({
 }) {
   return (
     <div className="group border border-[#EAEAEA] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-lg">
-
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden">
-
         <Image
           src={image}
           alt={title}
@@ -330,36 +345,24 @@ function AbilityCard({
           className="object-cover transition duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-
       </div>
 
       {/* Content */}
       <div className="p-8 md:p-10">
-
         {/* Title / Result */}
         <h3 className="text-xl font-semibold leading-relaxed text-[#111111]">
+          <span>{title}</span>
 
-          <span>
-            {title}
-          </span>
+          <span className="mx-2">/</span>
 
-          <span className="mx-2">
-            /
-          </span>
-
-          <span>
-            {result}
-          </span>
-
+          <span>{result}</span>
         </h3>
 
         {/* Description */}
         <p className="mt-5 text-sm leading-8 text-gray-500">
           {description}
         </p>
-
       </div>
-
     </div>
   );
 }
