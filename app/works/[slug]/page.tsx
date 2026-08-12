@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { portfolio } from "@/data/portfolio";
@@ -16,78 +15,180 @@ export default async function WorkPage({
 
   if (!work) {
     return (
-      <main className="min-h-screen bg-[#FAFAFA] px-6 py-20">
+      <main className="min-h-screen bg-[#FAFAFA] px-6 py-16 text-[#111111] md:px-12">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl font-semibold md:text-3xl">
             找不到作品
           </h1>
 
           <Link
             href="/"
-            className="mt-8 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-black"
+            className="mt-6 inline-flex items-center text-sm text-gray-500 transition-colors hover:text-black"
           >
-            ← 回首頁
+            回首頁
           </Link>
         </div>
       </main>
     );
   }
 
+  /*
+   * Recommended Works
+   * 優先推薦同分類作品，不足再補其他作品
+   */
+  const sameCategory = portfolio.filter(
+    (item) =>
+      item.slug !== work.slug &&
+      item.category === work.category
+  );
+
+  const otherWorks = portfolio.filter(
+    (item) =>
+      item.slug !== work.slug &&
+      item.category !== work.category
+  );
+
+  const recommendedWorks = [...sameCategory, ...otherWorks].slice(0, 6);
+
   return (
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
 
-      {/* Back Home */}
-      <Link
-        href="/"
-        className="
-          group
-          fixed
-          left-6
-          top-6
-          z-50
-          flex
-          items-center
-          gap-2
-          text-sm
-          text-gray-500
-          transition-colors
-          duration-300
-          hover:text-black
-          md:left-12
-          lg:left-20
-          md:top-8
-        "
-      >
-        <span className="text-lg transition-transform duration-300 group-hover:-translate-x-1">
-          ←
-        </span>
+      {/* =========================================================
+          Navbar
+      ========================================================= */}
 
-        <span>
-          Home
-        </span>
-      </Link>
+      <nav className="fixed top-0 z-50 w-full bg-[#FAFAFA]/90 px-6 py-4 backdrop-blur-sm md:px-8 md:py-5">
+
+        <div className="flex items-center justify-between">
+
+          {/* Logo */}
+
+          <Link
+            href="/"
+            className="text-lg font-semibold tracking-[0.2em] md:text-xl"
+          >
+            BEEYANG
+          </Link>
 
 
-      {/* Main */}
-      <section className="px-6 pb-20 pt-28 md:px-12 lg:px-20">
+          {/* Desktop Menu */}
+
+          <div className="hidden gap-8 text-sm text-gray-500 md:flex">
+
+            <Link
+              href="/about"
+              className="transition-colors hover:text-black"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/experience"
+              className="transition-colors hover:text-black"
+            >
+              Experience
+            </Link>
+
+            <Link
+              href="/awards"
+              className="transition-colors hover:text-black"
+            >
+              Awards
+            </Link>
+
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-black"
+            >
+              Contact
+            </Link>
+
+          </div>
+
+
+          {/* Mobile Menu */}
+
+          <details className="relative md:hidden">
+
+            <summary
+              className="
+                flex
+                h-9
+                w-9
+                cursor-pointer
+                list-none
+                items-center
+                justify-center
+                text-xl
+                [&::-webkit-details-marker]:hidden
+              "
+            >
+              ☰
+            </summary>
+
+            <div className="absolute right-0 top-12 w-48 border border-[#EAEAEA] bg-[#FAFAFA] p-2 shadow-sm">
+
+              <Link
+                href="/about"
+                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
+              >
+                About
+              </Link>
+
+              <Link
+                href="/experience"
+                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
+              >
+                Experience
+              </Link>
+
+              <Link
+                href="/awards"
+                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
+              >
+                Awards
+              </Link>
+
+              <Link
+                href="/contact"
+                className="block px-3 py-3 text-sm text-gray-600 hover:text-black"
+              >
+                Contact
+              </Link>
+
+            </div>
+
+          </details>
+
+        </div>
+
+      </nav>
+
+
+      {/* =========================================================
+          Main
+      ========================================================= */}
+
+      <section className="px-5 pb-14 pt-24 md:px-10 md:pb-18 md:pt-28 lg:px-16">
 
         <div className="mx-auto max-w-6xl">
 
+          {/* =====================================================
+              Header
+          ===================================================== */}
 
-          {/* Header */}
-          <div className="border-b border-[#EAEAEA] pb-8">
+          <div className="border-b border-[#EAEAEA] pb-5 md:pb-7">
 
-            <p className="text-xs tracking-[0.25em] text-gray-400 uppercase">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 md:text-xs md:tracking-[0.23em]">
               {work.category}
             </p>
 
-            <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="mt-2.5 max-w-4xl text-3xl font-semibold leading-tight tracking-tight md:mt-3 md:text-4xl lg:text-5xl">
               {work.title}
             </h1>
 
-            {/* 單一作品才顯示年份 */}
             {work.year && (
-              <p className="mt-4 text-sm text-gray-400">
+              <p className="mt-2 text-xs text-gray-400 md:mt-2.5 md:text-sm">
                 {work.year}
               </p>
             )}
@@ -95,23 +196,26 @@ export default async function WorkPage({
           </div>
 
 
-          {/* Project Information */}
-          <div className="border-b border-[#EAEAEA] py-10">
+          {/* =====================================================
+              Project Information
+          ===================================================== */}
+
+          <div className="border-b border-[#EAEAEA] py-6 md:py-8">
 
             <div className="max-w-3xl">
 
               {/* Project Overview */}
+
               <div>
 
-                <p className="text-xs tracking-[0.25em] text-gray-400">
-                  PROJECT OVERVIEW
+                <p className="text-[10px] leading-4 tracking-[0.18em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.22em]">
+                  PROJECT OVERVIEW{" "}
+                  <span className="tracking-normal">
+                    ｜作品介紹
+                  </span>
                 </p>
 
-                <p className="mt-2 text-xs text-gray-400">
-                  作品介紹
-                </p>
-
-                <p className="mt-5 leading-8 text-gray-600">
+                <p className="mt-2 text-sm leading-6 text-gray-600 md:mt-2.5 md:leading-7">
                   {work.description}
                 </p>
 
@@ -119,18 +223,18 @@ export default async function WorkPage({
 
 
               {/* My Contribution */}
+
               {work.contribution && (
-                <div className="mt-10">
+                <div className="mt-6 md:mt-7">
 
-                  <p className="text-xs tracking-[0.25em] text-gray-400">
-                    MY CONTRIBUTION
+                  <p className="text-[10px] leading-4 tracking-[0.18em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.22em]">
+                    MY CONTRIBUTION{" "}
+                    <span className="tracking-normal">
+                      ｜我的參與
+                    </span>
                   </p>
 
-                  <p className="mt-2 text-xs text-gray-400">
-                    我的參與
-                  </p>
-
-                  <p className="mt-5 leading-8 text-gray-600">
+                  <p className="mt-2 text-sm leading-6 text-gray-600 md:mt-2.5 md:leading-7">
                     {work.contribution}
                   </p>
 
@@ -142,18 +246,20 @@ export default async function WorkPage({
           </div>
 
 
-          {/* Video */}
+          {/* =====================================================
+              Video
+          ===================================================== */}
+
           {work.type === "video" && work.youtube && (
-            <section className="pt-12">
+            <section className="pt-7 md:pt-9">
 
-              <div className="mb-8">
+              <div className="mb-4 md:mb-5">
 
-                <p className="text-xs tracking-[0.25em] text-gray-400">
-                  VIDEO
-                </p>
-
-                <p className="mt-2 text-xs text-gray-400">
-                  影片
+                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
+                  VIDEO{" "}
+                  <span className="tracking-normal">
+                    ｜影片
+                  </span>
                 </p>
 
               </div>
@@ -174,63 +280,58 @@ export default async function WorkPage({
           )}
 
 
-          {/* Gallery */}
+          {/* =====================================================
+              Gallery
+          ===================================================== */}
+
           {work.gallery && work.gallery.length > 0 && (
-            <section className="pt-12">
+            <section className="pt-7 md:pt-9">
 
-              {/* Gallery Header */}
-              <div className="mb-8">
+              <div className="mb-4 md:mb-5">
 
-                <p className="text-xs tracking-[0.25em] text-gray-400">
-                  GALLERY
-                </p>
-
-                <p className="mt-2 text-xs text-gray-400">
-                  作品展示
+                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
+                  GALLERY{" "}
+                  <span className="tracking-normal">
+                    ｜作品展示
+                  </span>
                 </p>
 
               </div>
 
 
-              {/* Gallery */}
-              <div className="space-y-14">
+              <div className="space-y-7 md:space-y-9">
 
                 {work.gallery.map((item, index) => (
 
                   <div key={`${item.image}-${index}`}>
 
-                    {/* Image */}
                     <div className="relative w-full overflow-hidden bg-[#F5F5F5]">
 
                       <Image
                         src={item.image}
-                        alt={item.title || `${work.title} ${index + 1}`}
+                        alt={
+                          item.title ||
+                          `${work.title} ${index + 1}`
+                        }
                         width={1600}
                         height={1200}
-                        className="
-                          h-auto
-                          w-full
-                          object-contain
-                          transition
-                          duration-700
-                        "
+                        className="h-auto w-full object-contain"
                       />
 
                     </div>
 
 
-                    {/* Image Information */}
                     {(item.title || item.year) && (
-                      <div className="mt-4">
+                      <div className="mt-2.5">
 
                         {item.title && (
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs leading-5 text-gray-600 md:text-sm md:leading-6">
                             {item.title}
                           </p>
                         )}
 
                         {item.year && (
-                          <p className="mt-1 text-xs text-gray-400">
+                          <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
                             {item.year}
                           </p>
                         )}
@@ -248,8 +349,11 @@ export default async function WorkPage({
           )}
 
 
-          {/* Back Home Bottom */}
-          <div className="mt-20 border-t border-[#EAEAEA] pt-8">
+          {/* =====================================================
+              Back to All Works
+          ===================================================== */}
+
+          <div className="mt-9 border-t border-[#EAEAEA] pt-5 md:mt-11 md:pt-6">
 
             <Link
               href="/"
@@ -257,16 +361,17 @@ export default async function WorkPage({
                 group
                 inline-flex
                 items-center
-                gap-3
-                text-sm
+                gap-2
+                text-xs
                 text-gray-500
                 transition-colors
                 duration-300
                 hover:text-black
+                md:text-sm
               "
             >
 
-              <span className="text-lg transition-transform duration-300 group-hover:-translate-x-1">
+              <span className="transition-transform duration-300 group-hover:-translate-x-1">
                 ←
               </span>
 
@@ -277,6 +382,109 @@ export default async function WorkPage({
             </Link>
 
           </div>
+
+
+          {/* =====================================================
+              Explore More
+          ===================================================== */}
+
+          {recommendedWorks.length > 0 && (
+            <section className="mt-10 md:mt-14">
+
+              <div className="mb-4 md:mb-5">
+
+                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
+                  EXPLORE MORE
+                </p>
+
+              </div>
+
+
+              {/* Horizontal Scroll */}
+
+              <div
+                className="
+                  -mx-5
+                  flex
+                  snap-x
+                  snap-mandatory
+                  gap-3
+                  overflow-x-auto
+                  px-5
+                  pb-3
+                  md:-mx-10
+                  md:gap-4
+                  md:px-10
+                  lg:-mx-16
+                  lg:px-16
+                  [scrollbar-width:none]
+                  [&::-webkit-scrollbar]:hidden
+                "
+              >
+
+                {recommendedWorks.map((item) => (
+
+                  <Link
+                    key={item.slug}
+                    href={`/works/${item.slug}`}
+                    className="
+                      group
+                      w-[72vw]
+                      shrink-0
+                      snap-start
+                      md:w-[320px]
+                      lg:w-[360px]
+                    "
+                  >
+
+                    {/* Cover */}
+
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#F0F0F0]">
+
+                      <Image
+                        src={item.cover}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 72vw, 360px"
+                        className="
+                          object-cover
+                          transition-transform
+                          duration-500
+                          group-hover:scale-[1.03]
+                        "
+                      />
+
+                    </div>
+
+
+                    {/* Info */}
+
+                    <div className="mt-2.5">
+
+                      <p className="text-[9px] uppercase leading-4 tracking-[0.16em] text-gray-400 md:text-[10px]">
+                        {item.category}
+                      </p>
+
+                      <h3 className="mt-0.5 text-sm font-medium leading-5 md:text-base md:leading-6">
+                        {item.title}
+                      </h3>
+
+                      {item.year && (
+                        <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
+                          {item.year}
+                        </p>
+                      )}
+
+                    </div>
+
+                  </Link>
+
+                ))}
+
+              </div>
+
+            </section>
+          )}
 
         </div>
 
