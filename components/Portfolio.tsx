@@ -57,8 +57,6 @@ export default function Portfolio() {
               pb-1.5
               text-[11px]
               tracking-[0.1em]
-              transition-colors
-              duration-300
               ${
                 activeCategory === category
                   ? "text-black"
@@ -75,12 +73,10 @@ export default function Portfolio() {
                 left-0
                 h-[1px]
                 bg-black
-                transition-all
-                duration-300
                 ${
                   activeCategory === category
-                    ? "w-full opacity-100"
-                    : "w-0 opacity-0"
+                    ? "w-full"
+                    : "w-0"
                 }
               `}
             />
@@ -101,10 +97,7 @@ export default function Portfolio() {
         "
       >
         {filteredPortfolio.map((item) => (
-          <div
-            key={item.id}
-            className="portfolio-item"
-          >
+          <div key={item.id}>
             <PortfolioCard item={item} />
           </div>
         ))}
