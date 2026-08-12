@@ -44,10 +44,9 @@ export default function Portfolio() {
         });
 
   return (
-    <section className="px-6 pt-32 pb-20 md:px-12 lg:px-20">
-
+    <section className="pt-28 pb-16">
       {/* Filter */}
-      <div className="mb-12 flex flex-wrap gap-8 border-b border-[#EAEAEA] pb-6">
+      <div className="mb-8 flex flex-wrap gap-5 border-b border-[#EAEAEA] px-5 pb-4 md:gap-6 md:px-8">
         {categories.map((category) => (
           <button
             key={category}
@@ -55,9 +54,9 @@ export default function Portfolio() {
             onClick={() => setActiveCategory(category)}
             className={`
               relative
-              pb-2
-              text-sm
-              tracking-[0.15em]
+              pb-1.5
+              text-[11px]
+              tracking-[0.1em]
               transition-colors
               duration-300
               ${
@@ -93,29 +92,23 @@ export default function Portfolio() {
       <div
         className="
           grid
-          grid-cols-1
-          sm:grid-cols-2
+          grid-cols-2
           lg:grid-cols-3
           gap-0
           border-l
           border-t
           border-[#EAEAEA]
-          portfolio-grid
         "
       >
-        {filteredPortfolio.map((item, index) => (
+        {filteredPortfolio.map((item) => (
           <div
             key={item.id}
             className="portfolio-item"
-            style={{
-              animationDelay: `${Math.min(index * 60, 600)}ms`,
-            }}
           >
             <PortfolioCard item={item} />
           </div>
         ))}
       </div>
-
     </section>
   );
 }

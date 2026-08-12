@@ -12,15 +12,107 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ========================================
+   Base
+======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #fafafa;
+  color: #111111;
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ========================================
+   Portfolio Grid
+======================================== */
+
+.portfolio-item {
+  opacity: 1;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ========================================
+   Portfolio Images
+======================================== */
+
+.portfolio-item img {
+  display: block;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* ========================================
+   Desktop Hover
+======================================== */
+
+@media (hover: hover) and (pointer: fine) {
+  .portfolio-item img {
+    will-change: transform;
+    transition:
+      transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .portfolio-item:hover img {
+    transform: scale(1.035) translate3d(0, 0, 0);
+  }
+}
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 767px) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .portfolio-item {
+    transform: translateZ(0);
+  }
+
+  .portfolio-item img {
+    transform: translate3d(0, 0, 0);
+    transition: none;
+    will-change: auto;
+  }
+}
+
+/* ========================================
+   Accessibility
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .portfolio-image {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
 }
