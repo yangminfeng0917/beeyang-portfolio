@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://beeyang-portfolio.vercel.app/"),
+  metadataBase: new URL("https://beeyang-portfolio.vercel.app"),
 
   title: "BEEYANG — 楊旻峰｜Digital Media / Visual Designer",
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "BEEYANG — 楊旻峰｜Digital Media / Visual Designer",
     description:
       "數位媒體與視覺設計師｜廣播企劃、影像製作、視覺設計與攝影",
-    url: "https://beeyang-portfolio.vercel.app/",
+    url: "https://beeyang-portfolio.vercel.app",
     siteName: "BEEYANG",
     locale: "zh_TW",
     type: "website",

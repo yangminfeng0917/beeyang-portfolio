@@ -1,8 +1,12 @@
-
 export type GalleryItem = {
   image: string;
   title?: string;
   year?: string;
+};
+
+export type VideoItem = {
+  title?: string;
+  url: string;
 };
 
 export type PortfolioItem = {
@@ -24,23 +28,50 @@ export type PortfolioItem = {
   tools?: string[];
   type: "image" | "video";
   youtube?: string;
+  videos?: VideoItem[];
   gallery?: GalleryItem[];
 };
 
 export const portfolio: PortfolioItem[] = [
-  {
-    id: 1,
-    title: "短影音拍攝＆剪輯",
-    category: "Video Production",
-    year: "2022–2026",
-    cover: "/portfolio/01-short-video.jpg",
-    slug: "short-video",
-    featured: true,
-    type: "video",
-    description:
-      "負責社群短影音的企劃、拍攝與後期剪輯，從內容發想到影像製作，將節目與活動內容轉化為適合社群傳播的短影音作品。",
-    contribution: "企劃發想、腳本、拍攝、剪輯、字幕與社群影音製作",
-  },
+ {
+  id: 1,
+  title: "短影音拍攝＆剪輯",
+  category: "Video Production",
+  year: "2022–2026",
+  cover: "/portfolio/01-short-video.jpg",
+  slug: "short-video",
+  featured: true,
+  type: "video",
+
+  description:
+    "負責 POP Radio 社群短影音的企劃、拍攝與後期剪輯，從內容發想到影像製作，將節目與活動內容轉化為適合社群傳播的短影音作品。",
+
+  contribution:
+    "企劃發想、腳本、拍攝、剪輯、字幕與社群縮圖製作",
+
+  videos: [
+    {
+      title: "Short Video 01",
+      url: "https://www.youtube.com/embed/ueZqMhrj8MM",
+    },
+    {
+      title: "Short Video 02",
+      url: "https://www.youtube.com/embed/gOlFc9wF-bU",
+    },
+    {
+      title: "Short Video 03",
+      url: "https://www.youtube.com/embed/ESLIqRIeYl8",
+    },
+    {
+      title: "Short Video 04",
+      url: "https://www.youtube.com/embed/s9LQSLGRz6M",
+    },
+    {
+      title: "Short Video 05",
+      url: "https://www.youtube.com/embed/i9v9ltfc26o",
+    },
+  ],
+},
 
   {
     id: 2,
