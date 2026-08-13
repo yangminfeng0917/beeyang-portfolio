@@ -4,9 +4,10 @@ export type GalleryItem = {
   year?: string;
 };
 
-export type VideoItem = {
-  title?: string;
+export type WorkVideo = {
+  platform: "youtube" | "facebook" | "instagram";
   url: string;
+  title?: string;
 };
 
 export type PortfolioItem = {
@@ -28,18 +29,18 @@ export type PortfolioItem = {
   tools?: string[];
   type: "image" | "video";
   youtube?: string;
-  videos?: VideoItem[];
+  videos?: WorkVideo[];
   gallery?: GalleryItem[];
 };
 
 export const portfolio: PortfolioItem[] = [
- {
+  {
   id: 1,
-  title: "短影音拍攝＆剪輯",
+  title: "電台短影音拍攝剪輯",
   category: "Video Production",
   year: "2022–2026",
   cover: "/portfolio/01-short-video.jpg",
-  slug: "short-video",
+  slug: "radio-short-video",
   featured: true,
   type: "video",
 
@@ -51,40 +52,126 @@ export const portfolio: PortfolioItem[] = [
 
   videos: [
     {
-      title: "Short Video 01",
-      url: "https://www.youtube.com/embed/ueZqMhrj8MM",
-    },
-    {
-      title: "Short Video 02",
+      platform: "youtube",
       url: "https://www.youtube.com/embed/gOlFc9wF-bU",
     },
     {
-      title: "Short Video 03",
-      url: "https://www.youtube.com/embed/ESLIqRIeYl8",
-    },
-    {
-      title: "Short Video 04",
+      platform: "youtube",
       url: "https://www.youtube.com/embed/s9LQSLGRz6M",
     },
     {
-      title: "Short Video 05",
+      platform: "youtube",
       url: "https://www.youtube.com/embed/i9v9ltfc26o",
+    },
+    {
+      platform: "facebook",
+      url: "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F575129478416381%2F&show_text=false&width=267&t=0",
+    },
+    {
+      platform: "facebook",
+      url: "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2FFM917popradio%2Fvideos%2F910068991522049%2F&show_text=false&width=267&t=0",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/dvphxW_htKw",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/KDkCsonT4gI",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/KoTWlUh6n5Y",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/6zYFdNhr3ic",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/7X6EceySfgo",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/iluXNfYHPP8",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/fXVKzdkjJ8o",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/O_0aIsjBU5M",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/vqKFK32aDFk",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/brVvyFEI930",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/YlINP-rFIKs",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/ESLIqRIeYl8",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/yieoXLUAFEs",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/hXr4J-kwfOA",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/wrGjrCUMe80",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/ueZqMhrj8MM",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/8Muem5Rfit4",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/DfwSUMzY5F8",
+    },
+    {
+      platform: "youtube",
+      url: "https://www.youtube.com/embed/oOIzSGwlqG0",
     },
   ],
 },
 
-  {
-    id: 2,
-    title: "《大國民學測》測驗網站",
-    category: "Project Planning",
-    cover: "/portfolio/02-national-exam-website.jpg",
-    slug: "national-test-web",
-    featured: true,
-    type: "image",
-    description:
-      "以節目內容為核心打造互動測驗網站，將影音內容、題目設計與網頁視覺整合，讓使用者透過互動方式參與節目主題。",
-    contribution: "專案企劃、內容整合、視覺設計與數位內容製作",
-  },
+{
+  id: 2,
+  title: "《大國民學測》測驗網站",
+  category: "Project Planning",
+  year: "2024",
+  cover: "/portfolio/02-national-exam-website.jpg",
+  slug: "national-test-web",
+  featured: true,
+  type: "image",
+
+  description:
+    "以節目內容為核心打造互動測驗網站，將題目設計與網頁視覺整合，讓使用者透過互動方式參與節目主題。",
+
+  contribution:
+    "專案企劃、內容整合、視覺設計與測驗網站上架",
+
+  gallery: [
+    {
+      image: "/portfolio/02-national-exam-website-01.jpg",
+    },
+  ],
+},
 
   {
     id: 3,

@@ -1,40 +1,30 @@
-"use client";
-
+import VideoCarousel from "@/components/VideoCarousel";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
 import { portfolio } from "@/data/portfolio";
 
-export default function WorkPage({
+export default async function WorkPage({
   params,
 }: {
   params: Promise<{
     slug: string;
   }>;
 }) {
-  const [work, setWork] = useState<typeof portfolio[number] | null>(null);
-  const [currentVideo, setCurrentVideo] = useState(0);
+  const { slug } = await params;
 
-  const videoScrollRef = useRef<HTMLDivElement>(null);
-
-  useState(() => {
-    params.then(({ slug }) => {
-      const foundWork = portfolio.find((item) => item.slug === slug);
-      setWork(foundWork || null);
-    });
-  });
+  const work = portfolio.find((item) => item.slug === slug);
 
   if (!work) {
     return (
-      <main className="min-h-screen bg-[#FAFAFA] px-6 py-20 text-[#111111]">
+      <main className="min-h-screen bg-[#FAFAFA] px-6 py-16 text-[#111111] md:px-12">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold md:text-3xl">
             找不到作品
           </h1>
 
           <Link
             href="/"
-            className="mt-6 inline-flex text-sm text-gray-500 transition-colors hover:text-black"
+            className="mt-6 inline-flex items-center text-sm text-gray-500 transition-colors hover:text-black"
           >
             回首頁
           </Link>
@@ -42,6 +32,11 @@ export default function WorkPage({
       </main>
     );
   }
+
+  /*
+   * Recommended Works
+   * 優先推薦同分類作品，不足再補其他作品
+   */
 
   const sameCategory = portfolio.filter(
     (item) =>
@@ -60,34 +55,18 @@ export default function WorkPage({
     ...otherWorks,
   ].slice(0, 6);
 
-  const scrollVideos = () => {
-    if (!videoScrollRef.current) return;
-
-    const container = videoScrollRef.current;
-
-    const firstVideo =
-      container.querySelector<HTMLElement>("[data-video-card]");
-
-    if (!firstVideo) return;
-
-    const cardWidth = firstVideo.offsetWidth;
-    const gap = 16;
-
-    container.scrollTo({
-      left:
-        currentVideo * (cardWidth + gap),
-      behavior: "smooth",
-    });
-  };
-
   return (
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
 
-      {/* Navbar */}
+      {/* =========================================================
+          Navbar
+      ========================================================= */}
 
       <nav className="fixed top-0 z-50 w-full bg-[#FAFAFA]/90 px-6 py-4 backdrop-blur-sm md:px-8 md:py-5">
 
         <div className="flex items-center justify-between">
+
+          {/* Logo */}
 
           <Link
             href="/"
@@ -95,6 +74,8 @@ export default function WorkPage({
           >
             BEEYANG
           </Link>
+
+          {/* Desktop Menu */}
 
           <div className="hidden gap-8 text-sm text-gray-500 md:flex">
 
@@ -127,6 +108,8 @@ export default function WorkPage({
             </Link>
 
           </div>
+
+          {/* Mobile Menu */}
 
           <details className="relative md:hidden">
 
@@ -184,14 +167,17 @@ export default function WorkPage({
 
       </nav>
 
-
-      {/* Main */}
+      {/* =========================================================
+          Main
+      ========================================================= */}
 
       <section className="px-5 pb-14 pt-24 md:px-10 md:pb-18 md:pt-28 lg:px-16">
 
         <div className="mx-auto max-w-6xl">
 
-          {/* Header */}
+          {/* =====================================================
+              Header
+          ===================================================== */}
 
           <div className="border-b border-[#EAEAEA] pb-5 md:pb-7">
 
@@ -211,12 +197,15 @@ export default function WorkPage({
 
           </div>
 
-
-          {/* Project Information */}
+          {/* =====================================================
+              Project Information
+          ===================================================== */}
 
           <div className="border-b border-[#EAEAEA] py-6 md:py-8">
 
             <div className="max-w-3xl">
+
+              {/* Project Overview */}
 
               <div>
 
@@ -233,6 +222,7 @@ export default function WorkPage({
 
               </div>
 
+              {/* My Contribution */}
 
               {work.contribution && (
                 <div className="mt-6 md:mt-7">
@@ -255,179 +245,36 @@ export default function WorkPage({
 
           </div>
 
+ {/* =====================================================
+    Videos
+    YouTube + Facebook
+    9:16 + Horizontal Scroll + Pagination Dots
+===================================================== */}
 
-          {/* Short Videos */}
+{work.videos && work.videos.length > 0 && (
+  <section className="pt-7 md:pt-9">
 
-          {work.videos && work.videos.length > 0 && (
-            <section className="pt-7 md:pt-9">
+    <div className="mb-4 md:mb-5">
+      <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
+        VIDEO{" "}
+        <span className="tracking-normal">
+          ｜影片
+        </span>
+      </p>
+    </div>
 
-              <div className="mb-4 flex items-center justify-between md:mb-5">
+    <VideoCarousel
+      videos={work.videos}
+      workTitle={work.title}
+    />
 
-                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-                  VIDEO{" "}
-                  <span className="tracking-normal">
-                    ｜影片
-                  </span>
-                </p>
+  </section>
+)}
 
-              </div>
-
-
-              {/* Video Carousel */}
-
-              <div
-                ref={videoScrollRef}
-                className="
-                  -mx-5
-                  flex
-                  snap-x
-                  snap-mandatory
-                  gap-4
-                  overflow-x-auto
-                  px-5
-                  pb-3
-                  md:-mx-10
-                  md:gap-5
-                  md:px-10
-                  lg:-mx-16
-                  lg:px-16
-                  [scrollbar-width:none]
-                  [&::-webkit-scrollbar]:hidden
-                "
-                onScroll={(event) => {
-
-                  const container =
-                    event.currentTarget;
-
-                  const firstVideo =
-                    container.querySelector<HTMLElement>(
-                      "[data-video-card]"
-                    );
-
-                  if (!firstVideo) return;
-
-                  const cardWidth =
-                    firstVideo.offsetWidth;
-
-                  const gap = 16;
-
-                  const index = Math.round(
-                    container.scrollLeft /
-                      (cardWidth + gap)
-                  );
-
-                  setCurrentVideo(
-                    Math.max(
-                      0,
-                      Math.min(
-                        index,
-                        work.videos!.length - 1
-                      )
-                    )
-                  );
-                }}
-              >
-
-                {work.videos.map(
-                  (video, index) => (
-
-                    <div
-                      key={`${video.url}-${index}`}
-                      data-video-card
-                      className="
-                        w-[82vw]
-                        max-w-[300px]
-                        shrink-0
-                        snap-start
-                        md:w-[280px]
-                        lg:w-[300px]
-                      "
-                    >
-
-                      <div className="relative aspect-[9/16] overflow-hidden bg-black">
-
-                        <iframe
-                          src={video.url}
-                          title={`${work.title} ${index + 1}`}
-                          className="absolute inset-0 h-full w-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                        />
-
-                      </div>
-
-                    </div>
-
-                  )
-                )}
-
-              </div>
-
-
-              {/* Progress */}
-
-              {work.videos.length > 1 && (
-                <div className="mt-3 flex justify-center gap-1.5">
-
-                  {work.videos.map(
-                    (_, index) => (
-
-                      <button
-                        key={index}
-                        type="button"
-                        aria-label={`前往第 ${index + 1} 支影片`}
-                        onClick={() => {
-                          setCurrentVideo(index);
-
-                          const container =
-                            videoScrollRef.current;
-
-                          const firstVideo =
-                            container?.querySelector<HTMLElement>(
-                              "[data-video-card]"
-                            );
-
-                          if (!container || !firstVideo) {
-                            return;
-                          }
-
-                          const cardWidth =
-                            firstVideo.offsetWidth;
-
-                          const gap = 16;
-
-                          container.scrollTo({
-                            left:
-                              index *
-                              (cardWidth + gap),
-                            behavior: "smooth",
-                          });
-                        }}
-                        className={`
-                          h-1.5
-                          w-1.5
-                          rounded-full
-                          transition-all
-                          duration-300
-                          ${
-                            currentVideo === index
-                              ? "bg-black"
-                              : "bg-gray-300"
-                          }
-                        `}
-                      />
-
-                    )
-                  )}
-
-                </div>
-              )}
-
-            </section>
-          )}
-
-
-          {/* Regular Video */}
+          {/* =====================================================
+              Regular Video
+              16:9
+          ===================================================== */}
 
           {work.type === "video" &&
             work.youtube &&
@@ -460,79 +307,75 @@ export default function WorkPage({
               </section>
             )}
 
+          {/* =====================================================
+              Gallery
+          ===================================================== */}
 
-          {/* Gallery */}
+          {work.gallery && work.gallery.length > 0 && (
+            <section className="pt-7 md:pt-9">
 
-          {work.gallery &&
-            work.gallery.length > 0 && (
-              <section className="pt-7 md:pt-9">
+              <div className="mb-4 md:mb-5">
 
-                <div className="mb-4 md:mb-5">
+                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
+                  GALLERY{" "}
+                  <span className="tracking-normal">
+                    ｜作品展示
+                  </span>
+                </p>
 
-                  <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-                    GALLERY{" "}
-                    <span className="tracking-normal">
-                      ｜作品展示
-                    </span>
-                  </p>
+              </div>
 
-                </div>
+              <div className="space-y-7 md:space-y-9">
 
-                <div className="space-y-7 md:space-y-9">
+                {work.gallery.map((item, index) => (
 
-                  {work.gallery.map(
-                    (item, index) => (
+                  <div key={`${item.image}-${index}`}>
 
-                      <div
-                        key={`${item.image}-${index}`}
-                      >
+                    <div className="relative w-full overflow-hidden bg-[#F5F5F5]">
 
-                        <div className="relative w-full overflow-hidden bg-[#F5F5F5]">
+                      <Image
+                        src={item.image}
+                        alt={
+                          item.title ||
+                          `${work.title} ${index + 1}`
+                        }
+                        width={1600}
+                        height={1200}
+                        className="h-auto w-full object-contain"
+                      />
 
-                          <Image
-                            src={item.image}
-                            alt={
-                              item.title ||
-                              `${work.title} ${index + 1}`
-                            }
-                            width={1600}
-                            height={1200}
-                            className="h-auto w-full object-contain"
-                          />
+                    </div>
 
-                        </div>
+                    {(item.title || item.year) && (
+                      <div className="mt-2.5">
 
-                        {(item.title ||
-                          item.year) && (
-                          <div className="mt-2.5">
+                        {item.title && (
+                          <p className="text-xs leading-5 text-gray-600 md:text-sm md:leading-6">
+                            {item.title}
+                          </p>
+                        )}
 
-                            {item.title && (
-                              <p className="text-xs leading-5 text-gray-600 md:text-sm md:leading-6">
-                                {item.title}
-                              </p>
-                            )}
-
-                            {item.year && (
-                              <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
-                                {item.year}
-                              </p>
-                            )}
-
-                          </div>
+                        {item.year && (
+                          <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
+                            {item.year}
+                          </p>
                         )}
 
                       </div>
+                    )}
 
-                    )
-                  )}
+                  </div>
 
-                </div>
+                ))}
 
-              </section>
-            )}
+              </div>
 
+            </section>
+          )}
 
-          {/* Back to All Works */}
+          {/* =====================================================
+              Back to All Works
+          ===================================================== */}
 
           <div className="mt-9 border-t border-[#EAEAEA] pt-5 md:mt-11 md:pt-6">
 
@@ -564,8 +407,9 @@ export default function WorkPage({
 
           </div>
 
-
-          {/* Explore More */}
+          {/* =====================================================
+              Explore More
+          ===================================================== */}
 
           {recommendedWorks.length > 0 && (
             <section className="mt-10 md:mt-14">
@@ -578,6 +422,7 @@ export default function WorkPage({
 
               </div>
 
+              {/* Horizontal Scroll */}
 
               <div
                 className="
@@ -599,62 +444,59 @@ export default function WorkPage({
                 "
               >
 
-                {recommendedWorks.map(
-                  (item) => (
+                {recommendedWorks.map((item) => (
 
-                    <Link
-                      key={item.slug}
-                      href={`/works/${item.slug}`}
-                      className="
-                        group
-                        w-[72vw]
-                        shrink-0
-                        snap-start
-                        md:w-[320px]
-                        lg:w-[360px]
-                      "
-                    >
+                  <Link
+                    key={item.slug}
+                    href={`/works/${item.slug}`}
+                    className="
+                      group
+                      w-[72vw]
+                      shrink-0
+                      snap-start
+                      md:w-[320px]
+                      lg:w-[360px]
+                    "
+                  >
 
-                      <div className="relative aspect-[4/3] overflow-hidden bg-[#F0F0F0]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#F0F0F0]">
 
-                        <Image
-                          src={item.cover}
-                          alt={item.title}
-                          fill
-                          sizes="(max-width: 768px) 72vw, 360px"
-                          className="
-                            object-cover
-                            transition-transform
-                            duration-500
-                            group-hover:scale-[1.03]
-                          "
-                        />
+                      <Image
+                        src={item.cover}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 72vw, 360px"
+                        className="
+                          object-cover
+                          transition-transform
+                          duration-500
+                          group-hover:scale-[1.03]
+                        "
+                      />
 
-                      </div>
+                    </div>
 
+                    <div className="mt-2.5">
 
-                      <div className="mt-2.5">
+                      <p className="text-[9px] uppercase leading-4 tracking-[0.16em] text-gray-400 md:text-[10px]">
+                        {item.category}
+                      </p>
 
-                        <p className="text-[9px] uppercase leading-4 tracking-[0.16em] text-gray-400 md:text-[10px]">
-                          {item.category}
+                      <h3 className="mt-0.5 text-sm font-medium leading-5 md:text-base md:leading-6">
+                        {item.title}
+                      </h3>
+
+                      {item.year && (
+                        <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
+                          {item.year}
                         </p>
+                      )}
 
-                        <h3 className="mt-0.5 text-sm font-medium leading-5 md:text-base md:leading-6">
-                          {item.title}
-                        </h3>
+                    </div>
 
-                        {item.year && (
-                          <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
-                            {item.year}
-                          </p>
-                        )}
+                  </Link>
 
-                      </div>
-
-                    </Link>
-
-                  )
-                )}
+                ))}
 
               </div>
 
