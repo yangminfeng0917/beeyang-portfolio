@@ -948,6 +948,8 @@ export const portfolio: PortfolioItem[] = [
 
     contribution:
       "場記、燈光",
+      
+    award: "觀光局微電影比賽第三名",
 
     videos: [
       {

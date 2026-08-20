@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { portfolio } from "@/data/portfolio";
 
 export default function WorkDetailPage() {
   const params = useParams();
-  const slug = params?.slug as string;
+
+  const slugValue = params?.slug;
+
+  const slug = Array.isArray(slugValue)
+    ? slugValue[0]
+    : slugValue;
 
   const work = portfolio.find(
     (item) => item.slug === slug
   );
 
   if (!work) {
-    notFound();
+    return null;
   }
 
   return <WorkDetail work={work} />;
@@ -29,13 +34,14 @@ function WorkDetail({
   const videoRef = useRef<HTMLDivElement>(null);
 
   const [activeVideo, setActiveVideo] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const videos = work.videos ?? [];
   const gallery = work.gallery ?? [];
 
   /*
   =========================================================
-  判斷是否為短影音
+  判斷是否為直式影片
   =========================================================
   */
 
@@ -58,7 +64,7 @@ function WorkDetail({
 
   /*
   =========================================================
-  其他作品的影片方向
+  判斷個別影片方向
   =========================================================
   */
 
@@ -68,7 +74,9 @@ function WorkDetail({
     }
 
     if (videos[index]) {
-      return isVerticalVideo(videos[index].url);
+      return isVerticalVideo(
+        videos[index].url
+      );
     }
 
     return false;
@@ -76,7 +84,7 @@ function WorkDetail({
 
   /*
   =========================================================
-  判斷是否為「短影音作品」
+  判斷是否有直式影片
   =========================================================
   */
 
@@ -86,7 +94,7 @@ function WorkDetail({
 
   /*
   =========================================================
-  短影音左右滑動
+  短影音滑動偵測
   =========================================================
   */
 
@@ -146,7 +154,7 @@ function WorkDetail({
 
   /*
   =========================================================
-  點擊 ● ○ ○ ○
+  點擊影片圓點
   =========================================================
   */
 
@@ -177,8 +185,14 @@ function WorkDetail({
 
   /*
   =========================================================
-  其他作品
-  隨機排序
+  MORE WORKS
+  固定排序，不使用 Math.random()
+
+  每個作品依照自己的 slug
+  產生不同但穩定的推薦順序。
+
+  這樣可以避免：
+  Hydration failed
   =========================================================
   */
 
@@ -186,8 +200,36 @@ function WorkDetail({
     .filter(
       (item) => item.slug !== work.slug
     )
-    .sort(() => Math.random() - 0.5)
+    .sort((a, b) => {
+      const getScore = (slug: string) => {
+        let score = 0;
+
+        for (let i = 0; i < slug.length; i++) {
+          score =
+            (score * 31 +
+              slug.charCodeAt(i)) %
+            100000;
+        }
+
+        return score;
+      };
+
+      return (
+        getScore(`${work.slug}-${a.slug}`) -
+        getScore(`${work.slug}-${b.slug}`)
+      );
+    })
     .slice(0, 4);
+
+  /*
+  =========================================================
+  關閉手機選單
+  =========================================================
+  */
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
 
   return (
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
@@ -200,12 +242,17 @@ function WorkDetail({
 
         <div className="flex items-center justify-between">
 
+          {/* LOGO */}
+
           <Link
             href="/"
+            onClick={closeMenu}
             className="text-xl font-semibold tracking-[0.2em]"
           >
             BEEYANG
           </Link>
+
+          {/* DESKTOP MENU */}
 
           <div className="hidden gap-8 text-sm text-gray-500 md:flex">
 
@@ -239,14 +286,65 @@ function WorkDetail({
 
           </div>
 
-          <Link
-            href="/"
-            className="text-xs tracking-[0.14em] text-[#777777] transition-colors hover:text-black md:hidden"
+          {/* MOBILE MENU BUTTON */}
+
+          <button
+            type="button"
+            onClick={() =>
+              setMenuOpen(!menuOpen)
+            }
+            className="flex h-10 w-10 items-center justify-center text-xl md:hidden"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
           >
-            BACK
-          </Link>
+            {menuOpen ? "×" : "☰"}
+          </button>
 
         </div>
+
+        {/* MOBILE MENU */}
+
+        {menuOpen && (
+          <div className="border-t border-[#EAEAEA] bg-[#FAFAFA] md:hidden">
+
+            <div className="flex flex-col py-5">
+
+              <Link
+                href="/about"
+                onClick={closeMenu}
+                className="border-b border-[#EAEAEA] py-4 text-sm text-gray-600 transition-colors hover:text-black"
+              >
+                About
+              </Link>
+
+              <Link
+                href="/experience"
+                onClick={closeMenu}
+                className="border-b border-[#EAEAEA] py-4 text-sm text-gray-600 transition-colors hover:text-black"
+              >
+                Experience
+              </Link>
+
+              <Link
+                href="/awards"
+                onClick={closeMenu}
+                className="border-b border-[#EAEAEA] py-4 text-sm text-gray-600 transition-colors hover:text-black"
+              >
+                Awards
+              </Link>
+
+              <Link
+                href="/contact"
+                onClick={closeMenu}
+                className="py-4 text-sm text-gray-600 transition-colors hover:text-black"
+              >
+                Contact
+              </Link>
+
+            </div>
+
+          </div>
+        )}
 
       </nav>
 
@@ -322,7 +420,7 @@ function WorkDetail({
 
               <div className="space-y-5">
 
-                {/* CONTRIBUTION */}
+                {/* MY CONTRIBUTION */}
 
                 {work.contribution && (
                   <div>
@@ -381,9 +479,11 @@ function WorkDetail({
                       >
                         {link.title ||
                           "View Project"}
+
                         <span className="ml-2">
                           ↗
                         </span>
+
                       </a>
                     )
                   )}
@@ -400,12 +500,11 @@ function WorkDetail({
           {videos.length > 0 && (
             <section className="mb-14">
 
-              {/* -------------------------------------------------
-                  短影音
-              ------------------------------------------------- */}
+              {/* SHORT VIDEOS */}
 
               {hasVerticalVideos ? (
                 <>
+
                   <div
                     ref={videoRef}
                     className="
@@ -415,11 +514,9 @@ function WorkDetail({
                       gap-5
                       overflow-x-auto
                       scroll-smooth
-                      pb-2
-
+                      pb-1
                       [-ms-overflow-style:none]
                       [scrollbar-width:none]
-
                       [&::-webkit-scrollbar]:hidden
                     "
                   >
@@ -470,9 +567,9 @@ function WorkDetail({
                   {/* DOTS */}
 
                   {videos.length > 1 && (
-                    <div className="mt-5 flex justify-center">
+                    <div className="mt-2 flex justify-center">
 
-                      <div className="flex items-center gap-[7px]">
+                      <div className="flex items-center gap-[3px]">
 
                         {videos.map(
                           (_, index) => (
@@ -487,7 +584,7 @@ function WorkDetail({
                                   index
                                 )
                               }
-                              className="flex h-4 w-4 items-center justify-center"
+                              className="flex h-3 w-3 items-center justify-center"
                             >
 
                               <span
@@ -499,8 +596,8 @@ function WorkDetail({
                                   ${
                                     activeVideo ===
                                     index
-                                      ? "h-[7px] w-[7px] bg-black"
-                                      : "h-[5px] w-[5px] bg-[#C9C9C9]"
+                                      ? "h-[6px] w-[6px] bg-black"
+                                      : "h-[4px] w-[4px] bg-[#C9C9C9]"
                                   }
                                 `}
                               />
@@ -513,12 +610,11 @@ function WorkDetail({
 
                     </div>
                   )}
+
                 </>
               ) : (
 
-                /* -------------------------------------------------
-                   長影音：一支一支往下
-                ------------------------------------------------- */
+                /* LONG VIDEOS */
 
                 <div className="space-y-8">
 
@@ -609,16 +705,18 @@ function WorkDetail({
           )}
 
           {/* =================================================
-              OTHER WORKS
+              MORE WORKS
           ================================================= */}
 
-          <section className="border-t border-[#E5E5E5] pt-10">
+          <section className="pt-2">
 
             <div className="mb-6">
 
               <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
                 MORE WORKS
               </p>
+
+              {/* MORE WORKS 下方灰線 */}
 
               <div className="h-px w-full bg-[#E5E5E5]" />
 
@@ -665,7 +763,7 @@ function WorkDetail({
           </section>
 
           {/* =================================================
-              BACK
+              BACK TO WORKS
           ================================================= */}
 
           <div className="mt-12 border-t border-[#E5E5E5] pt-6">
@@ -675,7 +773,9 @@ function WorkDetail({
               className="inline-flex items-center gap-3 text-xs tracking-[0.14em] text-[#666666] transition-colors hover:text-black"
             >
 
-              <span>←</span>
+              <span>
+                ←
+              </span>
 
               <span>
                 BACK TO WORKS
