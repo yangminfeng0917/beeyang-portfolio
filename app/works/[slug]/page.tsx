@@ -11,9 +11,7 @@ export default function WorkDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const work = portfolio.find(
-    (item) => item.slug === slug
-  );
+  const work = portfolio.find((item) => item.slug === slug);
 
   if (!work) {
     notFound();
@@ -30,8 +28,7 @@ function WorkDetail({
   const videoRef = useRef<HTMLDivElement>(null);
 
   const [activeVideo, setActiveVideo] = useState(0);
-
-  const [otherWorks, setOtherWorks] = useState<
+  const [recommendedWorks, setRecommendedWorks] = useState<
     typeof portfolio
   >([]);
 
@@ -39,38 +36,41 @@ function WorkDetail({
   const gallery = work.gallery ?? [];
 
   /* =========================================================
-     隨機排列其他作品
-     
-     每次進入不同作品頁時重新隨機
-     排除目前正在看的作品
+     隨機推薦作品
+
+     排除目前作品
+     並且每次進入作品頁時重新隨機排序
   ========================================================= */
 
   useEffect(() => {
-    const works = portfolio
-      .filter((item) => item.slug !== work.slug)
-      .sort(() => Math.random() - 0.5);
+    const otherWorks = portfolio.filter(
+      (item) => item.slug !== work.slug
+    );
 
-    setOtherWorks(works);
+    const shuffled = [...otherWorks].sort(
+      () => Math.random() - 0.5
+    );
+
+    setRecommendedWorks(shuffled.slice(0, 4));
   }, [work.slug]);
 
   /* =========================================================
      判斷影片方向
 
-     Shorts / Facebook Reel
+     電台短影音
      → 直式 9:16
 
-     一般 YouTube
+     Facebook Reel
+     → 直式
+
+     Instagram Reel
+     → 直式
+
+     其他 YouTube
      → 橫式 16:9
   ========================================================= */
 
-  const isVerticalVideo = (index: number) => {
-    const url = videos[index]?.url ?? "";
-
-    // 電台短影音
-    if (work.id === 1) {
-      return true;
-    }
-
+  const isVerticalVideo = (url: string) => {
     return (
       url.includes("/shorts/") ||
       url.includes("plugins/video.php") ||
@@ -78,36 +78,26 @@ function WorkDetail({
     );
   };
 
-  /* =========================================================
-     是否有直式 / 橫式影片
-  ========================================================= */
+  const isWorkShortVideo = (index: number) => {
+    if (work.id === 1) {
+      return true;
+    }
 
-  const verticalVideos = videos.filter(
-    (_, index) => isVerticalVideo(index)
-  );
+    if (videos[index]) {
+      return isVerticalVideo(videos[index].url);
+    }
 
-  const horizontalVideos = videos.filter(
-    (_, index) => !isVerticalVideo(index)
-  );
-
-  const hasVerticalVideos =
-    verticalVideos.length > 0;
-
-  const hasHorizontalVideos =
-    horizontalVideos.length > 0;
+    return false;
+  };
 
   /* =========================================================
-     偵測短影音目前滑到哪一支
+     偵測目前影片
   ========================================================= */
 
   useEffect(() => {
-    if (!hasVerticalVideos) {
-      return;
-    }
-
     const container = videoRef.current;
 
-    if (!container) {
+    if (!container || videos.length <= 1) {
       return;
     }
 
@@ -120,8 +110,7 @@ function WorkDetail({
         return;
       }
 
-      const currentScroll =
-        container.scrollLeft;
+      const currentScroll = container.scrollLeft;
 
       let closestIndex = 0;
       let closestDistance = Infinity;
@@ -156,10 +145,10 @@ function WorkDetail({
         handleScroll
       );
     };
-  }, [hasVerticalVideos]);
+  }, [videos.length]);
 
   /* =========================================================
-     點擊短影音圓點
+     點擊 ● ○ ○ ○
   ========================================================= */
 
   const scrollToVideo = (index: number) => {
@@ -192,43 +181,76 @@ function WorkDetail({
 
       {/* =====================================================
           NAVBAR
+
+          與首頁完全一致
       ===================================================== */}
 
-      <nav className="fixed left-0 top-0 z-50 flex w-full items-center justify-between px-6 py-6 md:px-10">
+      <nav className="fixed top-0 z-50 w-full bg-[#FAFAFA]/80 px-6 py-5 backdrop-blur-sm md:px-8 md:py-6">
 
-        <Link
-          href="/"
-          className="text-sm font-medium tracking-[0.22em] transition-opacity hover:opacity-50"
-        >
-          BEEYANG
-        </Link>
+        <div className="flex items-center justify-between">
 
-        <Link
-          href="/"
-          className="text-[10px] tracking-[0.18em] text-[#888888] transition-opacity hover:opacity-50"
-        >
-          BACK
-        </Link>
+          {/* Logo */}
+
+          <Link
+            href="/"
+            className="text-xl font-semibold tracking-[0.2em]"
+          >
+            BEEYANG
+          </Link>
+
+          {/* Desktop Menu */}
+
+          <div className="hidden gap-8 text-sm text-gray-500 md:flex">
+
+            <Link
+              href="/about"
+              className="transition-colors hover:text-black"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/experience"
+              className="transition-colors hover:text-black"
+            >
+              Experience
+            </Link>
+
+            <Link
+              href="/awards"
+              className="transition-colors hover:text-black"
+            >
+              Awards
+            </Link>
+
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-black"
+            >
+              Contact
+            </Link>
+
+          </div>
+
+        </div>
 
       </nav>
-
 
       {/* =====================================================
           MAIN CONTENT
       ===================================================== */}
 
-      <section className="px-6 pb-24 pt-32 md:px-10 md:pt-40">
+      <section className="px-6 pb-24 pt-32 md:px-8 md:pt-36">
 
-        <div className="mx-auto max-w-[1320px]">
-
+        <div className="mx-auto max-w-[1400px]">
 
           {/* =================================================
               WORK HEADER
           ================================================= */}
 
-          <header className="max-w-[1050px]">
+          <header className="mb-16">
 
-            <div className="mb-6 flex flex-wrap items-center gap-3 text-[10px] tracking-[0.16em] text-[#999999]">
+            <div className="mb-5 flex flex-wrap items-center gap-3 text-xs tracking-[0.12em] text-[#888888]">
 
               <span>
                 {work.category}
@@ -236,7 +258,7 @@ function WorkDetail({
 
               {work.year && (
                 <>
-                  <span className="text-[#D5D5D5]">
+                  <span className="text-[#CCCCCC]">
                     /
                   </span>
 
@@ -248,22 +270,21 @@ function WorkDetail({
 
             </div>
 
-            <h1 className="text-[32px] font-medium leading-[1.25] tracking-[-0.025em] md:text-[54px]">
+            <h1 className="max-w-[1000px] text-3xl font-medium leading-[1.25] tracking-[-0.02em] md:text-5xl">
               {work.title}
             </h1>
 
           </header>
 
-
           {/* =================================================
               DESCRIPTION + INFORMATION
           ================================================= */}
 
-          <div className="mt-16 grid gap-12 border-t border-[#E5E5E5] pt-10 md:grid-cols-[minmax(0,1fr)_360px] md:gap-20">
+          <div className="mb-20 grid gap-12 md:grid-cols-[minmax(0,1fr)_300px]">
 
-            {/* DESCRIPTION */}
+            {/* Description */}
 
-            <div className="max-w-[720px]">
+            <div className="max-w-[820px]">
 
               <p className="text-[15px] leading-[2] text-[#333333] md:text-[16px]">
                 {work.description}
@@ -271,71 +292,48 @@ function WorkDetail({
 
             </div>
 
+            {/* Information */}
 
-            {/* INFORMATION */}
-
-            <div className="grid grid-cols-2 gap-x-8 gap-y-9">
+            <div className="space-y-8">
 
               {work.contribution && (
-                <div className="col-span-2">
+                <div>
 
-                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
-                    CONTRIBUTION
+                  <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
+                    MY CONTRIBUTION
                   </p>
 
-                  <p className="text-[13px] leading-[1.8] text-[#333333]">
+                  <p className="text-sm leading-[1.8] text-[#333333]">
                     {work.contribution}
                   </p>
 
                 </div>
               )}
 
-
               {work.role && (
                 <div>
 
-                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                  <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
                     ROLE
                   </p>
 
-                  <p className="text-[13px] leading-[1.8] text-[#333333]">
+                  <p className="text-sm leading-[1.8] text-[#333333]">
                     {work.role}
                   </p>
 
                 </div>
               )}
 
-
               {work.tools &&
                 work.tools.length > 0 && (
                   <div>
 
-                    <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                    <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
                       TOOLS
                     </p>
 
-                    <p className="text-[13px] leading-[1.8] text-[#333333]">
+                    <p className="text-sm leading-[1.8] text-[#333333]">
                       {work.tools.join(" / ")}
-                    </p>
-
-                  </div>
-                )}
-
-
-              {/* =================================================
-                  AWARD
-              ================================================= */}
-
-              {"award" in work &&
-                work.award && (
-                  <div className="col-span-2">
-
-                    <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
-                      AWARD
-                    </p>
-
-                    <p className="text-[13px] leading-[1.8] text-[#333333]">
-                      {work.award}
                     </p>
 
                   </div>
@@ -345,197 +343,226 @@ function WorkDetail({
 
           </div>
 
+          {/* =================================================
+              VIDEOS
 
-          {/* =====================================================
-              SHORT VIDEOS
-              
-              只有直式影片
-              左右滑動
-              ● ○ ○ ○
-          ===================================================== */}
+              短影音：
+              橫向滑動 / 9:16
 
-          {hasVerticalVideos && (
-            <section className="mt-24">
+              長影音：
+              上下排列 / 16:9
+          ================================================= */}
 
-              <div
-                ref={videoRef}
-                className="
-                  flex
-                  snap-x
-                  snap-mandatory
-                  gap-5
-                  overflow-x-auto
-                  scroll-smooth
-                  pb-2
+          {videos.length > 0 && (
+            <section className="mb-24">
 
-                  [-ms-overflow-style:none]
-                  [scrollbar-width:none]
+              {videos.some((_, index) =>
+                isWorkShortVideo(index)
+              ) ? (
+                <>
+                  {/* Short Video Slider */}
 
-                  [&::-webkit-scrollbar]:hidden
-                "
-              >
+                  <div
+                    ref={videoRef}
+                    className="
+                      flex
+                      snap-x
+                      snap-mandatory
+                      gap-6
+                      overflow-x-auto
+                      scroll-smooth
+                      pb-3
 
-                {verticalVideos.map(
-                  (video, index) => (
-                    <article
-                      key={`${video.url}-${index}`}
-                      className="
-                        snap-start
-                        shrink-0
-                        w-[240px]
-                        overflow-hidden
-                        bg-black
-                        md:w-[300px]
-                      "
-                    >
+                      [-ms-overflow-style:none]
+                      [scrollbar-width:none]
 
-                      <div className="relative aspect-[9/16] w-full bg-black">
+                      [&::-webkit-scrollbar]:hidden
+                    "
+                  >
 
-                        <iframe
-                          src={video.url}
-                          title={
-                            video.title ||
-                            `${work.title} ${
-                              index + 1
-                            }`
-                          }
-                          className="absolute inset-0 h-full w-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          loading={
-                            index === 0
-                              ? "eager"
-                              : "lazy"
-                          }
-                        />
+                    {videos.map(
+                      (video, index) => {
 
-                      </div>
+                        const vertical =
+                          isWorkShortVideo(
+                            index
+                          );
 
-                    </article>
-                  )
-                )}
-
-              </div>
-
-
-              {/* =================================================
-                  DOTS
-              ================================================= */}
-
-              {verticalVideos.length > 1 && (
-                <div className="mt-6 flex justify-center">
-
-                  <div className="flex items-center gap-[6px]">
-
-                    {verticalVideos.map(
-                      (_, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          aria-label={`影片 ${
-                            index + 1
-                          }`}
-                          onClick={() =>
-                            scrollToVideo(
-                              index
-                            )
-                          }
-                          className="flex h-4 w-4 items-center justify-center"
-                        >
-
-                          <span
+                        return (
+                          <article
+                            key={`${video.url}-${index}`}
                             className={`
-                              block
-                              rounded-full
-                              transition-all
-                              duration-300
-
+                              snap-start
+                              shrink-0
+                              overflow-hidden
+                              bg-black
                               ${
-                                activeVideo ===
-                                index
-                                  ? "h-[7px] w-[7px] bg-black"
-                                  : "h-[5px] w-[5px] bg-[#C8C8C8]"
+                                vertical
+                                  ? "w-[267px] md:w-[320px]"
+                                  : "w-[calc(100vw-48px)] max-w-[900px] md:w-[800px]"
                               }
                             `}
-                          />
+                          >
 
-                        </button>
-                      )
+                            <div
+                              className={`
+                                relative
+                                w-full
+                                bg-black
+                                ${
+                                  vertical
+                                    ? "aspect-[9/16]"
+                                    : "aspect-video"
+                                }
+                              `}
+                            >
+
+                              <iframe
+                                src={video.url}
+                                title={
+                                  video.title ||
+                                  `${work.title} ${
+                                    index + 1
+                                  }`
+                                }
+                                className="absolute inset-0 h-full w-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                loading={
+                                  index === 0
+                                    ? "eager"
+                                    : "lazy"
+                                }
+                              />
+
+                            </div>
+
+                          </article>
+                        );
+                      }
                     )}
 
                   </div>
 
+                  {/* Slider Dots */}
+
+                  {videos.length > 1 && (
+                    <div className="mt-7 flex justify-center">
+
+                      <div className="flex items-center gap-[7px]">
+
+                        {videos.map(
+                          (_, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              aria-label={`影片 ${
+                                index + 1
+                              }`}
+                              onClick={() =>
+                                scrollToVideo(
+                                  index
+                                )
+                              }
+                              className="flex h-4 w-4 items-center justify-center"
+                            >
+
+                              <span
+                                className={`
+                                  block
+                                  rounded-full
+                                  transition-all
+                                  duration-300
+                                  ${
+                                    activeVideo ===
+                                    index
+                                      ? "h-[7px] w-[7px] bg-black"
+                                      : "h-[5px] w-[5px] bg-[#C9C9C9]"
+                                  }
+                                `}
+                              />
+
+                            </button>
+                          )
+                        )}
+
+                      </div>
+
+                    </div>
+                  )}
+
+                </>
+              ) : (
+
+                /* =================================================
+                   Long Videos
+                   全部上下排列
+                ================================================= */
+
+                <div className="space-y-12">
+
+                  {videos.map(
+                    (video, index) => (
+
+                      <article
+                        key={`${video.url}-${index}`}
+                        className="mx-auto w-full max-w-[1000px] overflow-hidden bg-black"
+                      >
+
+                        <div className="relative aspect-video w-full">
+
+                          <iframe
+                            src={video.url}
+                            title={
+                              video.title ||
+                              `${work.title} ${
+                                index + 1
+                              }`
+                            }
+                            className="absolute inset-0 h-full w-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            loading={
+                              index === 0
+                                ? "eager"
+                                : "lazy"
+                            }
+                          />
+
+                        </div>
+
+                      </article>
+
+                    )
+                  )}
+
                 </div>
+
               )}
 
             </section>
           )}
 
+          {/* =================================================
+              GALLERY
+          ================================================= */}
 
-          {/* =====================================================
-              LONG VIDEOS
-              
-              橫式影片
-              一支一支往下排列
-          ===================================================== */}
+          {gallery.length > 0 && (
+            <section className="mb-24">
 
-          {hasHorizontalVideos && (
-            <section
-              className={
-                hasVerticalVideos
-                  ? "mt-28"
-                  : "mt-24"
-              }
-            >
+              <div className="mb-8">
 
-              <div className="space-y-12">
-
-                {horizontalVideos.map(
-                  (video, index) => (
-                    <article
-                      key={`${video.url}-${index}`}
-                      className="w-full overflow-hidden bg-black"
-                    >
-
-                      <div className="relative aspect-video w-full">
-
-                        <iframe
-                          src={video.url}
-                          title={
-                            video.title ||
-                            `${work.title} ${
-                              index + 1
-                            }`
-                          }
-                          className="absolute inset-0 h-full w-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          loading="lazy"
-                        />
-
-                      </div>
-
-                    </article>
-                  )
-                )}
+                <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
+                  GALLERY
+                </p>
 
               </div>
 
-            </section>
-          )}
-
-
-          {/* =====================================================
-              GALLERY
-          ===================================================== */}
-
-          {gallery.length > 0 && (
-            <section className="mt-28">
-
-              <div className="space-y-10">
+              <div className="space-y-8">
 
                 {gallery.map(
                   (item, index) => (
+
                     <figure
                       key={`${item.image}-${index}`}
                       className="overflow-hidden bg-white"
@@ -549,13 +576,13 @@ function WorkDetail({
                             index + 1
                           }`
                         }
-                        width={1800}
-                        height={1200}
+                        width={1600}
+                        height={1000}
                         className="h-auto w-full"
-                        sizes="(max-width: 768px) 100vw, 1320px"
                       />
 
                     </figure>
+
                   )
                 )}
 
@@ -564,25 +591,49 @@ function WorkDetail({
             </section>
           )}
 
+          {/* =================================================
+              AWARD
+          ================================================= */}
 
-          {/* =====================================================
+          {work.award && (
+            <section className="mb-24">
+
+              <div className="border-t border-[#E5E5E5] pt-10">
+
+                <p className="mb-6 text-[10px] tracking-[0.18em] text-[#999999]">
+                  AWARD
+                </p>
+
+                <div className="max-w-[900px]">
+
+                  <p className="text-2xl font-medium leading-[1.5] md:text-3xl">
+                    {work.award}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </section>
+          )}
+
+          {/* =================================================
               OTHER WORKS
-              
-              隨機排序
-          ===================================================== */}
+              隨機推薦
+          ================================================= */}
 
-          {otherWorks.length > 0 && (
-            <section className="mt-32 border-t border-[#E5E5E5] pt-12">
+          {recommendedWorks.length > 0 && (
+            <section className="mb-24">
 
               <div className="mb-8 flex items-end justify-between">
 
                 <div>
 
-                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                  <p className="mb-2 text-[10px] tracking-[0.18em] text-[#999999]">
                     MORE WORKS
                   </p>
 
-                  <h2 className="text-[20px] font-medium tracking-[-0.02em]">
+                  <h2 className="text-xl font-medium">
                     其他作品
                   </h2>
 
@@ -590,81 +641,50 @@ function WorkDetail({
 
                 <Link
                   href="/"
-                  className="text-[10px] tracking-[0.16em] text-[#888888] transition-colors hover:text-black"
+                  className="text-xs tracking-[0.12em] text-[#777777] transition-colors hover:text-black"
                 >
                   VIEW ALL
                 </Link>
 
               </div>
 
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
 
-              {/* =================================================
-                  HORIZONTAL RECOMMENDATIONS
-              ================================================= */}
-
-              <div
-                className="
-                  flex
-                  gap-5
-                  overflow-x-auto
-                  pb-4
-
-                  [-ms-overflow-style:none]
-                  [scrollbar-width:none]
-
-                  [&::-webkit-scrollbar]:hidden
-                "
-              >
-
-                {otherWorks.map(
+                {recommendedWorks.map(
                   (item) => (
+
                     <Link
                       key={item.slug}
                       href={`/works/${item.slug}`}
-                      className="
-                        group
-                        block
-                        w-[240px]
-                        shrink-0
-                        md:w-[280px]
-                      "
+                      className="group block"
                     >
 
-                      {/* COVER */}
-
-                      <div className="relative aspect-[4/3] overflow-hidden bg-[#EEEEEE]">
+                      <div className="aspect-[4/3] overflow-hidden bg-[#EEEEEE]">
 
                         <Image
                           src={item.cover}
                           alt={item.title}
-                          fill
-                          className="
-                            object-cover
-                            transition-transform
-                            duration-500
-                            group-hover:scale-[1.03]
-                          "
-                          sizes="280px"
+                          width={1200}
+                          height={900}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />
 
                       </div>
 
+                      <div className="pt-3">
 
-                      {/* TITLE */}
-
-                      <div className="mt-4">
-
-                        <p className="text-[12px] leading-[1.6] text-[#222222]">
+                        <p className="text-sm leading-[1.5]">
                           {item.title}
                         </p>
 
-                        <p className="mt-1 text-[9px] tracking-[0.12em] text-[#999999]">
+                        <p className="mt-1 text-[10px] tracking-[0.08em] text-[#999999]">
                           {item.category}
                         </p>
 
                       </div>
 
                     </Link>
+
                   )
                 )}
 
@@ -673,19 +693,18 @@ function WorkDetail({
             </section>
           )}
 
-
-          {/* =====================================================
+          {/* =================================================
               BACK TO WORKS
-          ===================================================== */}
+          ================================================= */}
 
-          <div className="mt-20 border-t border-[#E5E5E5] pt-8">
+          <div className="border-t border-[#E5E5E5] pt-8">
 
             <Link
               href="/"
-              className="inline-flex items-center gap-3 text-[10px] tracking-[0.16em] text-[#777777] transition-colors hover:text-black"
+              className="inline-flex items-center gap-3 text-xs tracking-[0.14em] text-[#666666] transition-colors hover:text-black"
             >
 
-              <span className="text-sm">
+              <span>
                 ←
               </span>
 
