@@ -1,507 +1,701 @@
-import VideoCarousel from "@/components/VideoCarousel";
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useParams, notFound } from "next/navigation";
+
 import { portfolio } from "@/data/portfolio";
 
-export default async function WorkPage({
-  params,
-}: {
-  params: Promise<{
-    slug: string;
-  }>;
-}) {
-  const { slug } = await params;
+export default function WorkDetailPage() {
+  const params = useParams();
+  const slug = params?.slug as string;
 
-  const work = portfolio.find((item) => item.slug === slug);
+  const work = portfolio.find(
+    (item) => item.slug === slug
+  );
 
   if (!work) {
-    return (
-      <main className="min-h-screen bg-[#FAFAFA] px-6 py-16 text-[#111111] md:px-12">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="text-2xl font-semibold md:text-3xl">
-            找不到作品
-          </h1>
-
-          <Link
-            href="/"
-            className="mt-6 inline-flex items-center text-sm text-gray-500 transition-colors hover:text-black"
-          >
-            回首頁
-          </Link>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
-  /*
-   * Recommended Works
-   * 優先推薦同分類作品，不足再補其他作品
-   */
+  return <WorkDetail work={work} />;
+}
 
-  const sameCategory = portfolio.filter(
-    (item) =>
-      item.slug !== work.slug &&
-      item.category === work.category
+function WorkDetail({
+  work,
+}: {
+  work: (typeof portfolio)[number];
+}) {
+  const videoRef = useRef<HTMLDivElement>(null);
+
+  const [activeVideo, setActiveVideo] = useState(0);
+
+  const [otherWorks, setOtherWorks] = useState<
+    typeof portfolio
+  >([]);
+
+  const videos = work.videos ?? [];
+  const gallery = work.gallery ?? [];
+
+  /* =========================================================
+     隨機排列其他作品
+     
+     每次進入不同作品頁時重新隨機
+     排除目前正在看的作品
+  ========================================================= */
+
+  useEffect(() => {
+    const works = portfolio
+      .filter((item) => item.slug !== work.slug)
+      .sort(() => Math.random() - 0.5);
+
+    setOtherWorks(works);
+  }, [work.slug]);
+
+  /* =========================================================
+     判斷影片方向
+
+     Shorts / Facebook Reel
+     → 直式 9:16
+
+     一般 YouTube
+     → 橫式 16:9
+  ========================================================= */
+
+  const isVerticalVideo = (index: number) => {
+    const url = videos[index]?.url ?? "";
+
+    // 電台短影音
+    if (work.id === 1) {
+      return true;
+    }
+
+    return (
+      url.includes("/shorts/") ||
+      url.includes("plugins/video.php") ||
+      url.includes("/reel/")
+    );
+  };
+
+  /* =========================================================
+     是否有直式 / 橫式影片
+  ========================================================= */
+
+  const verticalVideos = videos.filter(
+    (_, index) => isVerticalVideo(index)
   );
 
-  const otherWorks = portfolio.filter(
-    (item) =>
-      item.slug !== work.slug &&
-      item.category !== work.category
+  const horizontalVideos = videos.filter(
+    (_, index) => !isVerticalVideo(index)
   );
 
-  const recommendedWorks = [
-    ...sameCategory,
-    ...otherWorks,
-  ].slice(0, 6);
+  const hasVerticalVideos =
+    verticalVideos.length > 0;
+
+  const hasHorizontalVideos =
+    horizontalVideos.length > 0;
+
+  /* =========================================================
+     偵測短影音目前滑到哪一支
+  ========================================================= */
+
+  useEffect(() => {
+    if (!hasVerticalVideos) {
+      return;
+    }
+
+    const container = videoRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const items = Array.from(
+        container.children
+      ) as HTMLElement[];
+
+      if (!items.length) {
+        return;
+      }
+
+      const currentScroll =
+        container.scrollLeft;
+
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      items.forEach((item, index) => {
+        const distance = Math.abs(
+          item.offsetLeft -
+            container.offsetLeft -
+            currentScroll
+        );
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveVideo(closestIndex);
+    };
+
+    container.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
+
+    return () => {
+      container.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+    };
+  }, [hasVerticalVideos]);
+
+  /* =========================================================
+     點擊短影音圓點
+  ========================================================= */
+
+  const scrollToVideo = (index: number) => {
+    const container = videoRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const target = container.children[
+      index
+    ] as HTMLElement;
+
+    if (!target) {
+      return;
+    }
+
+    container.scrollTo({
+      left:
+        target.offsetLeft -
+        container.offsetLeft,
+      behavior: "smooth",
+    });
+
+    setActiveVideo(index);
+  };
 
   return (
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
 
-      {/* =========================================================
-          Navbar
-      ========================================================= */}
+      {/* =====================================================
+          NAVBAR
+      ===================================================== */}
 
-      <nav className="fixed top-0 z-50 w-full bg-[#FAFAFA]/90 px-6 py-4 backdrop-blur-sm md:px-8 md:py-5">
+      <nav className="fixed left-0 top-0 z-50 flex w-full items-center justify-between px-6 py-6 md:px-10">
 
-        <div className="flex items-center justify-between">
+        <Link
+          href="/"
+          className="text-sm font-medium tracking-[0.22em] transition-opacity hover:opacity-50"
+        >
+          BEEYANG
+        </Link>
 
-          {/* Logo */}
-
-          <Link
-            href="/"
-            className="text-lg font-semibold tracking-[0.2em] md:text-xl"
-          >
-            BEEYANG
-          </Link>
-
-          {/* Desktop Menu */}
-
-          <div className="hidden gap-8 text-sm text-gray-500 md:flex">
-
-            <Link
-              href="/about"
-              className="transition-colors hover:text-black"
-            >
-              About
-            </Link>
-
-            <Link
-              href="/experience"
-              className="transition-colors hover:text-black"
-            >
-              Experience
-            </Link>
-
-            <Link
-              href="/awards"
-              className="transition-colors hover:text-black"
-            >
-              Awards
-            </Link>
-
-            <Link
-              href="/contact"
-              className="transition-colors hover:text-black"
-            >
-              Contact
-            </Link>
-
-          </div>
-
-          {/* Mobile Menu */}
-
-          <details className="relative md:hidden">
-
-            <summary
-              className="
-                flex
-                h-9
-                w-9
-                cursor-pointer
-                list-none
-                items-center
-                justify-center
-                text-xl
-                [&::-webkit-details-marker]:hidden
-              "
-            >
-              ☰
-            </summary>
-
-            <div className="absolute right-0 top-12 w-48 border border-[#EAEAEA] bg-[#FAFAFA] p-2 shadow-sm">
-
-              <Link
-                href="/about"
-                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
-              >
-                About
-              </Link>
-
-              <Link
-                href="/experience"
-                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
-              >
-                Experience
-              </Link>
-
-              <Link
-                href="/awards"
-                className="block border-b border-[#EAEAEA] px-3 py-3 text-sm text-gray-600 hover:text-black"
-              >
-                Awards
-              </Link>
-
-              <Link
-                href="/contact"
-                className="block px-3 py-3 text-sm text-gray-600 hover:text-black"
-              >
-                Contact
-              </Link>
-
-            </div>
-
-          </details>
-
-        </div>
+        <Link
+          href="/"
+          className="text-[10px] tracking-[0.18em] text-[#888888] transition-opacity hover:opacity-50"
+        >
+          BACK
+        </Link>
 
       </nav>
 
-      {/* =========================================================
-          Main
-      ========================================================= */}
 
-      <section className="px-5 pb-14 pt-24 md:px-10 md:pb-18 md:pt-28 lg:px-16">
+      {/* =====================================================
+          MAIN CONTENT
+      ===================================================== */}
 
-        <div className="mx-auto max-w-6xl">
+      <section className="px-6 pb-24 pt-32 md:px-10 md:pt-40">
 
-          {/* =====================================================
-              Header
-          ===================================================== */}
+        <div className="mx-auto max-w-[1320px]">
 
-          <div className="border-b border-[#EAEAEA] pb-5 md:pb-7">
 
-            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 md:text-xs md:tracking-[0.23em]">
-              {work.category}
-            </p>
+          {/* =================================================
+              WORK HEADER
+          ================================================= */}
 
-            <h1 className="mt-2.5 max-w-4xl text-3xl font-semibold leading-tight tracking-tight md:mt-3 md:text-4xl lg:text-5xl">
+          <header className="max-w-[1050px]">
+
+            <div className="mb-6 flex flex-wrap items-center gap-3 text-[10px] tracking-[0.16em] text-[#999999]">
+
+              <span>
+                {work.category}
+              </span>
+
+              {work.year && (
+                <>
+                  <span className="text-[#D5D5D5]">
+                    /
+                  </span>
+
+                  <span>
+                    {work.year}
+                  </span>
+                </>
+              )}
+
+            </div>
+
+            <h1 className="text-[32px] font-medium leading-[1.25] tracking-[-0.025em] md:text-[54px]">
               {work.title}
             </h1>
 
-            {work.year && (
-              <p className="mt-2 text-xs text-gray-400 md:mt-2.5 md:text-sm">
-                {work.year}
+          </header>
+
+
+          {/* =================================================
+              DESCRIPTION + INFORMATION
+          ================================================= */}
+
+          <div className="mt-16 grid gap-12 border-t border-[#E5E5E5] pt-10 md:grid-cols-[minmax(0,1fr)_360px] md:gap-20">
+
+            {/* DESCRIPTION */}
+
+            <div className="max-w-[720px]">
+
+              <p className="text-[15px] leading-[2] text-[#333333] md:text-[16px]">
+                {work.description}
               </p>
-            )}
 
-          </div>
+            </div>
 
-          {/* =====================================================
-              Project Information
-          ===================================================== */}
 
-          <div className="border-b border-[#EAEAEA] py-6 md:py-8">
+            {/* INFORMATION */}
 
-            <div className="max-w-3xl">
-
-              {/* Project Overview */}
-
-              <div>
-
-                <p className="text-[10px] leading-4 tracking-[0.18em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.22em]">
-                  PROJECT OVERVIEW{" "}
-                  <span className="tracking-normal">
-                    ｜作品介紹
-                  </span>
-                </p>
-
-                <p className="mt-2 text-sm leading-6 text-gray-600 md:mt-2.5 md:leading-7">
-                  {work.description}
-                </p>
-
-              </div>
-
-              {/* My Contribution */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-9">
 
               {work.contribution && (
-                <div className="mt-6 md:mt-7">
+                <div className="col-span-2">
 
-                  <p className="text-[10px] leading-4 tracking-[0.18em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.22em]">
-                    MY CONTRIBUTION{" "}
-                    <span className="tracking-normal">
-                      ｜我的參與
-                    </span>
+                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                    CONTRIBUTION
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-gray-600 md:mt-2.5 md:leading-7">
+                  <p className="text-[13px] leading-[1.8] text-[#333333]">
                     {work.contribution}
                   </p>
 
                 </div>
               )}
 
+
+              {work.role && (
+                <div>
+
+                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                    ROLE
+                  </p>
+
+                  <p className="text-[13px] leading-[1.8] text-[#333333]">
+                    {work.role}
+                  </p>
+
+                </div>
+              )}
+
+
+              {work.tools &&
+                work.tools.length > 0 && (
+                  <div>
+
+                    <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                      TOOLS
+                    </p>
+
+                    <p className="text-[13px] leading-[1.8] text-[#333333]">
+                      {work.tools.join(" / ")}
+                    </p>
+
+                  </div>
+                )}
+
+
+              {/* =================================================
+                  AWARD
+              ================================================= */}
+
+              {"award" in work &&
+                work.award && (
+                  <div className="col-span-2">
+
+                    <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                      AWARD
+                    </p>
+
+                    <p className="text-[13px] leading-[1.8] text-[#333333]">
+                      {work.award}
+                    </p>
+
+                  </div>
+                )}
+
             </div>
 
           </div>
 
- {/* =====================================================
-    Videos
-    YouTube + Facebook
-    9:16 + Horizontal Scroll + Pagination Dots
-===================================================== */}
-
-{work.videos && work.videos.length > 0 && (
-  <section className="pt-7 md:pt-9">
-
-    <div className="mb-4 md:mb-5">
-      <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-        VIDEO{" "}
-        <span className="tracking-normal">
-          ｜影片
-        </span>
-      </p>
-    </div>
-
-    <VideoCarousel
-      videos={work.videos}
-      workTitle={work.title}
-    />
-
-  </section>
-)}
 
           {/* =====================================================
-              Regular Video
-              16:9
+              SHORT VIDEOS
+              
+              只有直式影片
+              左右滑動
+              ● ○ ○ ○
           ===================================================== */}
 
-          {work.type === "video" &&
-            work.youtube &&
-            !work.videos?.length && (
-              <section className="pt-7 md:pt-9">
+          {hasVerticalVideos && (
+            <section className="mt-24">
 
-                <div className="mb-4 md:mb-5">
+              <div
+                ref={videoRef}
+                className="
+                  flex
+                  snap-x
+                  snap-mandatory
+                  gap-5
+                  overflow-x-auto
+                  scroll-smooth
+                  pb-2
 
-                  <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-                    VIDEO{" "}
-                    <span className="tracking-normal">
-                      ｜影片
-                    </span>
-                  </p>
+                  [-ms-overflow-style:none]
+                  [scrollbar-width:none]
 
-                </div>
+                  [&::-webkit-scrollbar]:hidden
+                "
+              >
 
-                <div className="aspect-video overflow-hidden bg-black">
+                {verticalVideos.map(
+                  (video, index) => (
+                    <article
+                      key={`${video.url}-${index}`}
+                      className="
+                        snap-start
+                        shrink-0
+                        w-[240px]
+                        overflow-hidden
+                        bg-black
+                        md:w-[300px]
+                      "
+                    >
 
-                  <iframe
-                    src={work.youtube}
-                    title={work.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
+                      <div className="relative aspect-[9/16] w-full bg-black">
 
-                </div>
+                        <iframe
+                          src={video.url}
+                          title={
+                            video.title ||
+                            `${work.title} ${
+                              index + 1
+                            }`
+                          }
+                          className="absolute inset-0 h-full w-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading={
+                            index === 0
+                              ? "eager"
+                              : "lazy"
+                          }
+                        />
 
-              </section>
-            )}
+                      </div>
 
-          {/* =====================================================
-              Gallery
-          ===================================================== */}
-
-          {work.gallery && work.gallery.length > 0 && (
-            <section className="pt-7 md:pt-9">
-
-              <div className="mb-4 md:mb-5">
-
-                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-                  GALLERY{" "}
-                  <span className="tracking-normal">
-                    ｜作品展示
-                  </span>
-                </p>
+                    </article>
+                  )
+                )}
 
               </div>
 
-              <div className="space-y-7 md:space-y-9">
 
-                {work.gallery.map((item, index) => (
+              {/* =================================================
+                  DOTS
+              ================================================= */}
 
-                  <div key={`${item.image}-${index}`}>
+              {verticalVideos.length > 1 && (
+                <div className="mt-6 flex justify-center">
 
-                    <div className="relative w-full overflow-hidden bg-[#F5F5F5]">
+                  <div className="flex items-center gap-[6px]">
+
+                    {verticalVideos.map(
+                      (_, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          aria-label={`影片 ${
+                            index + 1
+                          }`}
+                          onClick={() =>
+                            scrollToVideo(
+                              index
+                            )
+                          }
+                          className="flex h-4 w-4 items-center justify-center"
+                        >
+
+                          <span
+                            className={`
+                              block
+                              rounded-full
+                              transition-all
+                              duration-300
+
+                              ${
+                                activeVideo ===
+                                index
+                                  ? "h-[7px] w-[7px] bg-black"
+                                  : "h-[5px] w-[5px] bg-[#C8C8C8]"
+                              }
+                            `}
+                          />
+
+                        </button>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+              )}
+
+            </section>
+          )}
+
+
+          {/* =====================================================
+              LONG VIDEOS
+              
+              橫式影片
+              一支一支往下排列
+          ===================================================== */}
+
+          {hasHorizontalVideos && (
+            <section
+              className={
+                hasVerticalVideos
+                  ? "mt-28"
+                  : "mt-24"
+              }
+            >
+
+              <div className="space-y-12">
+
+                {horizontalVideos.map(
+                  (video, index) => (
+                    <article
+                      key={`${video.url}-${index}`}
+                      className="w-full overflow-hidden bg-black"
+                    >
+
+                      <div className="relative aspect-video w-full">
+
+                        <iframe
+                          src={video.url}
+                          title={
+                            video.title ||
+                            `${work.title} ${
+                              index + 1
+                            }`
+                          }
+                          className="absolute inset-0 h-full w-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading="lazy"
+                        />
+
+                      </div>
+
+                    </article>
+                  )
+                )}
+
+              </div>
+
+            </section>
+          )}
+
+
+          {/* =====================================================
+              GALLERY
+          ===================================================== */}
+
+          {gallery.length > 0 && (
+            <section className="mt-28">
+
+              <div className="space-y-10">
+
+                {gallery.map(
+                  (item, index) => (
+                    <figure
+                      key={`${item.image}-${index}`}
+                      className="overflow-hidden bg-white"
+                    >
 
                       <Image
                         src={item.image}
                         alt={
                           item.title ||
-                          `${work.title} ${index + 1}`
+                          `${work.title} ${
+                            index + 1
+                          }`
                         }
-                        width={1600}
+                        width={1800}
                         height={1200}
-                        className="h-auto w-full object-contain"
+                        className="h-auto w-full"
+                        sizes="(max-width: 768px) 100vw, 1320px"
                       />
 
-                    </div>
-
-                    {(item.title || item.year) && (
-                      <div className="mt-2.5">
-
-                        {item.title && (
-                          <p className="text-xs leading-5 text-gray-600 md:text-sm md:leading-6">
-                            {item.title}
-                          </p>
-                        )}
-
-                        {item.year && (
-                          <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
-                            {item.year}
-                          </p>
-                        )}
-
-                      </div>
-                    )}
-
-                  </div>
-
-                ))}
+                    </figure>
+                  )
+                )}
 
               </div>
 
             </section>
           )}
 
+
           {/* =====================================================
-              Back to All Works
+              OTHER WORKS
+              
+              隨機排序
           ===================================================== */}
 
-          <div className="mt-9 border-t border-[#EAEAEA] pt-5 md:mt-11 md:pt-6">
+          {otherWorks.length > 0 && (
+            <section className="mt-32 border-t border-[#E5E5E5] pt-12">
+
+              <div className="mb-8 flex items-end justify-between">
+
+                <div>
+
+                  <p className="mb-2 text-[9px] tracking-[0.2em] text-[#999999]">
+                    MORE WORKS
+                  </p>
+
+                  <h2 className="text-[20px] font-medium tracking-[-0.02em]">
+                    其他作品
+                  </h2>
+
+                </div>
+
+                <Link
+                  href="/"
+                  className="text-[10px] tracking-[0.16em] text-[#888888] transition-colors hover:text-black"
+                >
+                  VIEW ALL
+                </Link>
+
+              </div>
+
+
+              {/* =================================================
+                  HORIZONTAL RECOMMENDATIONS
+              ================================================= */}
+
+              <div
+                className="
+                  flex
+                  gap-5
+                  overflow-x-auto
+                  pb-4
+
+                  [-ms-overflow-style:none]
+                  [scrollbar-width:none]
+
+                  [&::-webkit-scrollbar]:hidden
+                "
+              >
+
+                {otherWorks.map(
+                  (item) => (
+                    <Link
+                      key={item.slug}
+                      href={`/works/${item.slug}`}
+                      className="
+                        group
+                        block
+                        w-[240px]
+                        shrink-0
+                        md:w-[280px]
+                      "
+                    >
+
+                      {/* COVER */}
+
+                      <div className="relative aspect-[4/3] overflow-hidden bg-[#EEEEEE]">
+
+                        <Image
+                          src={item.cover}
+                          alt={item.title}
+                          fill
+                          className="
+                            object-cover
+                            transition-transform
+                            duration-500
+                            group-hover:scale-[1.03]
+                          "
+                          sizes="280px"
+                        />
+
+                      </div>
+
+
+                      {/* TITLE */}
+
+                      <div className="mt-4">
+
+                        <p className="text-[12px] leading-[1.6] text-[#222222]">
+                          {item.title}
+                        </p>
+
+                        <p className="mt-1 text-[9px] tracking-[0.12em] text-[#999999]">
+                          {item.category}
+                        </p>
+
+                      </div>
+
+                    </Link>
+                  )
+                )}
+
+              </div>
+
+            </section>
+          )}
+
+
+          {/* =====================================================
+              BACK TO WORKS
+          ===================================================== */}
+
+          <div className="mt-20 border-t border-[#E5E5E5] pt-8">
 
             <Link
               href="/"
-              className="
-                group
-                inline-flex
-                items-center
-                gap-2
-                text-xs
-                text-gray-500
-                transition-colors
-                duration-300
-                hover:text-black
-                md:text-sm
-              "
+              className="inline-flex items-center gap-3 text-[10px] tracking-[0.16em] text-[#777777] transition-colors hover:text-black"
             >
 
-              <span className="transition-transform duration-300 group-hover:-translate-x-1">
+              <span className="text-sm">
                 ←
               </span>
 
               <span>
-                Back to all works
+                BACK TO WORKS
               </span>
 
             </Link>
 
           </div>
-
-          {/* =====================================================
-              Explore More
-          ===================================================== */}
-
-          {recommendedWorks.length > 0 && (
-            <section className="mt-10 md:mt-14">
-
-              <div className="mb-4 md:mb-5">
-
-                <p className="text-[10px] leading-4 tracking-[0.2em] text-gray-400 md:text-xs md:leading-5 md:tracking-[0.23em]">
-                  EXPLORE MORE
-                </p>
-
-              </div>
-
-              {/* Horizontal Scroll */}
-
-              <div
-                className="
-                  -mx-5
-                  flex
-                  snap-x
-                  snap-mandatory
-                  gap-3
-                  overflow-x-auto
-                  px-5
-                  pb-3
-                  md:-mx-10
-                  md:gap-4
-                  md:px-10
-                  lg:-mx-16
-                  lg:px-16
-                  [scrollbar-width:none]
-                  [&::-webkit-scrollbar]:hidden
-                "
-              >
-
-                {recommendedWorks.map((item) => (
-
-                  <Link
-                    key={item.slug}
-                    href={`/works/${item.slug}`}
-                    className="
-                      group
-                      w-[72vw]
-                      shrink-0
-                      snap-start
-                      md:w-[320px]
-                      lg:w-[360px]
-                    "
-                  >
-
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#F0F0F0]">
-
-                      <Image
-                        src={item.cover}
-                        alt={item.title}
-                        fill
-                        sizes="(max-width: 768px) 72vw, 360px"
-                        className="
-                          object-cover
-                          transition-transform
-                          duration-500
-                          group-hover:scale-[1.03]
-                        "
-                      />
-
-                    </div>
-
-                    <div className="mt-2.5">
-
-                      <p className="text-[9px] uppercase leading-4 tracking-[0.16em] text-gray-400 md:text-[10px]">
-                        {item.category}
-                      </p>
-
-                      <h3 className="mt-0.5 text-sm font-medium leading-5 md:text-base md:leading-6">
-                        {item.title}
-                      </h3>
-
-                      {item.year && (
-                        <p className="mt-0.5 text-[10px] leading-4 text-gray-400 md:text-xs md:leading-5">
-                          {item.year}
-                        </p>
-                      )}
-
-                    </div>
-
-                  </Link>
-
-                ))}
-
-              </div>
-
-            </section>
-          )}
 
         </div>
 
